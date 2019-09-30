@@ -12,9 +12,9 @@ from torch.nn.modules.adaptive import AdaptiveLogSoftmaxWithLoss
 import torch.nn.functional as F
 
 from allennlp.data import Vocabulary
-from allennlp.modules import TimeDistributed, Seq2SeqEncoder
+from allennlp.modules import TimeDistributed, Seq2SeqEncoder, Embedding, FeedForward
 from allennlp.models.model import Model
-from allennlp.nn import InitializerApplicator, RegularizerApplicator
+from allennlp.nn import InitializerApplicator, RegularizerApplicator, Activation
 from allennlp.nn.util import sequence_cross_entropy_with_logits
 from allennlp.training.metrics import CategoricalAccuracy
 
@@ -75,6 +75,9 @@ class TagDecoder(Model):
                  vocab: Vocabulary,
                  task: str,
                  encoder: Seq2SeqEncoder,
+                 lang_embed_dim: int = None,
+                 use_lang_feedforward: bool = False,
+                 lang_feedforward: FeedForward = None,
                  label_smoothing: float = 0.0,
                  dropout: float = 0.0,
                  adaptive: bool = False,
@@ -83,6 +86,12 @@ class TagDecoder(Model):
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(TagDecoder, self).__init__(vocab, regularizer)
 
+        self.lang_embedding = None
+        if lang_embed_dim is not None:
+            self.lang_embedding = Embedding(self.vocab.get_vocab_size("langs"), lang_embed_dim)
+
+        self.dropout = torch.nn.Dropout(p=dropout)
+
         self.task = task
         self.encoder = encoder
         self.output_dim = encoder.get_output_dim()
@@ -90,6 +99,13 @@ class TagDecoder(Model):
         self.num_classes = self.vocab.get_vocab_size(task)
         self.adaptive = adaptive
         self.features = features if features else []
+
+        self.use_lang_feedforward = use_lang_feedforward
+        if self.lang_embedding is not None and use_lang_feedforward:
+            self.lang_feedforward = lang_feedforward or \
+                                     FeedForward(self.output_dim, 1,
+                                                 self.output_dim,
+                                                 Activation.by_name("elu")())
 
         self.metrics = {
             "acc": CategoricalAccuracy(),
@@ -123,6 +139,17 @@ class TagDecoder(Model):
                 mask: torch.LongTensor,
                 gold_tags: Dict[str, torch.LongTensor],
                 metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
+
+        if self.lang_embedding is not None:
+            batch_size, _, _ = encoded_text.size()
+            lang_embed_size = self.lang_embedding.get_output_dim()
+            embedded_lang = self.dropout(self.lang_embedding(gold_tags['langs']))
+            embedded_lang = embedded_lang.view(batch_size, -1, lang_embed_size)
+            encoded_text = torch.cat([encoded_text, embedded_lang], -1)
+
+        if self.lang_embedding is not None and self.use_lang_feedforward:
+            encoded_text = self.lang_feedforward(encoded_text)
+
         hidden = encoded_text
         hidden = self.encoder(hidden, mask)
 

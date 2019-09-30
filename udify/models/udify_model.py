@@ -44,7 +44,7 @@ class UdifyModel(Model):
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(UdifyModel, self).__init__(vocab, regularizer)
 
-        self.tasks = sorted(tasks)
+        self.tasks = tasks
         self.vocab = vocab
         self.bert_vocab = BertTokenizer.from_pretrained("config/archive/bert-base-multilingual-cased/vocab.txt").vocab
         self.text_field_embedder = text_field_embedder
@@ -119,7 +119,7 @@ class UdifyModel(Model):
             if task == "deps":
                 tag_logits = logits["upos"] if "upos" in logits else None
                 pred_output = self.decoders[task](decoder_input, mask, tag_logits,
-                                                  gold_tags["head_tags"], gold_tags["head_indices"], metadata)
+                                                  gold_tags, metadata)
                 for key in ["heads", "head_tags", "arc_loss", "tag_loss", "mask"]:
                     output_dict[key] = pred_output[key]
             else:

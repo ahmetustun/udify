@@ -128,7 +128,8 @@ class UniversalDependenciesDatasetReader(DatasetReader):
             "lemma_rules": lemma_rules,
             "ids": ids,
             "multiword_ids": multiword_ids,
-            "multiword_forms": multiword_forms
+            "multiword_forms": multiword_forms,
+            "langs": langs
         })
 
         return Instance(fields)

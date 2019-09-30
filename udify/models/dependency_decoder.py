@@ -41,6 +41,9 @@ class DependencyDecoder(Model):
                  tag_representation_dim: int,
                  arc_representation_dim: int,
                  pos_embed_dim: int = None,
+                 lang_embed_dim: int = None,
+                 use_lang_feedforward: bool = False,
+                 lang_feedforward: FeedForward = None,
                  tag_feedforward: FeedForward = None,
                  arc_feedforward: FeedForward = None,
                  use_mst_decoding_for_validation: bool = True,
@@ -53,10 +56,21 @@ class DependencyDecoder(Model):
         if pos_embed_dim is not None:
             self.pos_tag_embedding = Embedding(self.vocab.get_vocab_size("upos"), pos_embed_dim)
 
+        self.lang_embedding = None
+        if lang_embed_dim is not None:
+            self.lang_embedding = Embedding(self.vocab.get_vocab_size("langs"), lang_embed_dim)
+
         self.dropout = torch.nn.Dropout(p=dropout)
 
         self.encoder = encoder
         encoder_output_dim = encoder.get_output_dim()
+
+        self.use_lang_feedforward = use_lang_feedforward
+        if self.lang_embedding is not None and use_lang_feedforward:
+            self.lang_feedforward = lang_feedforward or \
+                                    FeedForward(self.output_dim, 1,
+                                                self.output_dim,
+                                                Activation.by_name("elu")())
 
         self.head_arc_feedforward = arc_feedforward or \
                                         FeedForward(encoder_output_dim, 1,
@@ -105,9 +119,10 @@ class DependencyDecoder(Model):
                 encoded_text: torch.FloatTensor,
                 mask: torch.LongTensor,
                 pos_logits: torch.LongTensor = None,  # predicted
-                head_tags: torch.LongTensor = None,
-                head_indices: torch.LongTensor = None,
+                gold_tags: Dict[str, torch.LongTensor] = None,
                 metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
+
+        head_tags, head_indices = gold_tags["head_tags"], gold_tags["head_indices"]
 
         batch_size, _, _ = encoded_text.size()
 
@@ -122,6 +137,16 @@ class DependencyDecoder(Model):
             embedded_pos_tags = self.dropout(self.pos_tag_embedding(pos_tags))
             embedded_pos_tags = embedded_pos_tags.view(batch_size, -1, pos_embed_size)
             encoded_text = torch.cat([encoded_text, embedded_pos_tags], -1)
+
+        if self.lang_embedding is not None:
+            batch_size, _, _ = encoded_text.size()
+            lang_embed_size = self.lang_embedding.get_output_dim()
+            embedded_lang = self.dropout(self.lang_embedding(gold_tags['langs']))
+            embedded_lang = embedded_lang.view(batch_size, -1, lang_embed_size)
+            encoded_text = torch.cat([encoded_text, embedded_lang], -1)
+
+        if self.lang_embedding is not None and self.use_lang_feedforward:
+            encoded_text = self.lang_feedforward(encoded_text)
 
         encoded_text = self.encoder(encoded_text, mask)
 

@@ -24,7 +24,7 @@
     "word_dropout": 0.2,
     "mix_embedding": 12,
     "layer_dropout": 0.1,
-    "tasks": ["upos"],
+    "tasks": ["upos", "deps"],
     "text_field_embedder": {
       "type": "udify_embedder",
       "dropout": 0.5,
@@ -49,9 +49,11 @@
     },
     "decoders": {
       "upos": {
+        "lang_embed_dim": 12,
+        "use_lang_feedforward": false,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 780
         }
       },
       "feats": {
@@ -69,11 +71,14 @@
         "adaptive": true
       },
       "deps": {
+        "pos_embed_dim": 64,
+        "lang_embed_dim": 12,
+        "use_lang_feedforward": false,
         "tag_representation_dim": 256,
         "arc_representation_dim": 768,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 844
         }
       }
     }
