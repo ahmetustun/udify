@@ -80,8 +80,10 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                 dep_rels = get_field("deprel")
                 dependencies = list(zip(dep_rels, heads))
 
+                langs = get_field("lang")
+
                 yield self.text_to_instance(words, lemmas, lemma_rules, upos_tags, xpos_tags,
-                                            feats, dependencies, ids, multiword_ids, multiword_forms)
+                                            feats, dependencies, ids, multiword_ids, multiword_forms, langs)
 
     @overrides
     def text_to_instance(self,  # type: ignore
@@ -94,14 +96,15 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                          dependencies: List[Tuple[str, int]] = None,
                          ids: List[str] = None,
                          multiword_ids: List[str] = None,
-                         multiword_forms: List[str] = None) -> Instance:
+                         multiword_forms: List[str] = None,
+                         langs: List[str] = None) -> Instance:
         fields: Dict[str, Field] = {}
 
         tokens = TextField([Token(w) for w in words], self._token_indexers)
         fields["tokens"] = tokens
 
-        names = ["upos", "xpos", "feats", "lemmas"]
-        all_tags = [upos_tags, xpos_tags, feats, lemma_rules]
+        names = ["upos", "xpos", "feats", "lemmas", "langs"]
+        all_tags = [upos_tags, xpos_tags, feats, lemma_rules, langs]
         for name, field in zip(names, all_tags):
             if field:
                 fields[name] = SequenceLabelField(field, tokens, label_namespace=name)

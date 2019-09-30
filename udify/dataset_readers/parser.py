@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import re
 from collections import OrderedDict
 
-DEFAULT_FIELDS = ('id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc')
+DEFAULT_FIELDS = ('id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc', 'lang')
 
 deps_pattern = r"\d+:[a-z][a-z_-]*(:[a-z][a-z_-]*)?"
 MULTI_DEPS_PATTERN = re.compile(r"^{}(\|{})*$".format(deps_pattern, deps_pattern))

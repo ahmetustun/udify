@@ -1,19 +1,5 @@
 // The base configuration for UD parsing
 {
-  "dataset_reader": {
-    "type": "udify_universal_dependencies",
-    "lazy": false,
-    "token_indexers": {
-      "tokens": {
-        "type": "single_id",
-        "lowercase_tokens": true
-      },
-      "token_characters": {
-        "type": "characters",
-        "min_padding_length": 1
-      }
-    }
-  },
   "vocabulary": {
     "directory_path": "data/vocab/UD_English-EWT/vocabulary",
     "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "langs","*tags", "*labels"]
@@ -33,36 +19,10 @@
     local shared_layers = 2,
     local task_layers = 1,
     
-    "type": "udify_model",
+    "type": "bilstm_model",
     "tasks": ["upos", "xpos", "feats", "lemmas", "deps"],
     "dropout": global_dropout,
     "word_dropout": 0.2,
-    "text_field_embedder": {
-      "type": "udify_embedder",
-      "sum_embeddings": ["tokens", "token_characters"],
-      "dropout": global_dropout,
-      "token_embedders": {
-        "tokens": {
-          "type": "embedding",
-          "embedding_dim": word_embedding_dim
-        },
-        "token_characters": {
-          "type": "udify_character_encoding",
-          "dropout": global_dropout,
-          "embedding": {
-            "embedding_dim": char_embedding_dim
-          },
-          "encoder": {
-            "type": "lstm",
-            "input_size": char_embedding_dim,
-            "hidden_size": char_embedding_dim,
-            "num_layers": task_layers,
-            "dropout": 0.0,
-            "bidirectional": true
-          }
-        }
-      }
-    },
     "encoder": {
       "type": "udify_residual_rnn",
       "input_size": hidden_dim,
