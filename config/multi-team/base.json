@@ -68,7 +68,7 @@
           "requires_grad": false,
           "dropout": 0.25,
           "layer_dropout": 0.25,
-          "combine_layers": "all"
+          "combine_layers": "last"
         }*/
       }
     },
