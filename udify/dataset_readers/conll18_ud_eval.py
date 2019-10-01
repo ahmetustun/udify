@@ -99,7 +99,7 @@ import unicodedata
 import unittest
 
 # CoNLL-U column names
-ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC = range(10)
+ID, FORM, LEMMA, UPOS, XPOS, FEATS, HEAD, DEPREL, DEPS, MISC, LANG = range(11)
 
 # Content and functional relations
 CONTENT_DEPRELS = {
@@ -227,7 +227,7 @@ def load_conllu(file):
 
         # Read next token/word
         columns = line.split("\t")
-        if len(columns) != 10:
+        if len(columns) < 10:
             raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(_encode(line)))
 
         # Skip empty nodes
@@ -256,7 +256,7 @@ def load_conllu(file):
             for _ in range(start, end + 1):
                 word_line = _decode(file.readline().rstrip("\r\n"))
                 word_columns = word_line.split("\t")
-                if len(word_columns) != 10:
+                if len(word_columns) < 10:
                     raise UDError("The CoNLL-U line does not contain 10 tab-separated columns: '{}'".format(_encode(word_line)))
                 ud.words.append(UDWord(ud.tokens[-1], word_columns, is_multiword=True))
         # Basic tokens/words
