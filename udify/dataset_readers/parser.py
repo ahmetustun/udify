@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import re
 from collections import OrderedDict
 
-DEFAULT_FIELDS = ('id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc', 'lang')
+DEFAULT_FIELDS = ('id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'dephead', 'deprel', 'dep', 'misc', 'lang')
 
 deps_pattern = r"\d+:[a-z][a-z_-]*(:[a-z][a-z_-]*)?"
 MULTI_DEPS_PATTERN = re.compile(r"^{}(\|{})*$".format(deps_pattern, deps_pattern))
@@ -68,11 +68,8 @@ def parse_line(line, fields=DEFAULT_FIELDS, parse_feats=True):
             else:
                 value = line[i]
 
-        elif field == "head":
-            value = parse_int_value(line[i])
-
-        elif field == "deps":
-            value = parse_paired_list_value(line[i])
+        #elif field == "dephead":
+        #    value = parse_int_value(line[i])
 
         elif field == "misc":
             value = parse_dict_value(line[i])

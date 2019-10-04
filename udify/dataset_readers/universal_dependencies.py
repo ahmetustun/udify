@@ -76,14 +76,17 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                 xpos_tags = get_field("xpostag")
                 feats = get_field("feats", lambda x: "|".join(k + "=" + v for k, v in x.items())
                                                      if hasattr(x, "items") else "_")
-                heads = get_field("head")
+                heads = get_field("dephead")
                 dep_rels = get_field("deprel")
-                dependencies = list(zip(dep_rels, heads))
+                #dependencies = list(zip(dep_rels, heads))
 
                 langs = get_field("lang")
 
+                #yield self.text_to_instance(words, lemmas, lemma_rules, upos_tags, xpos_tags,
+                #                            feats, dependencies, ids, multiword_ids, multiword_forms, langs)
+
                 yield self.text_to_instance(words, lemmas, lemma_rules, upos_tags, xpos_tags,
-                                            feats, dependencies, ids, multiword_ids, multiword_forms, langs)
+                                feats, heads, dep_rels, ids, multiword_ids, multiword_forms, langs)
 
     @overrides
     def text_to_instance(self,  # type: ignore
@@ -93,7 +96,9 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                          upos_tags: List[str] = None,
                          xpos_tags: List[str] = None,
                          feats: List[str] = None,
-                         dependencies: List[Tuple[str, int]] = None,
+                         depheads: List[int] = None,
+                         deprels: List[str] = None,
+                         #dependencies: List[Tuple[str, int]] = None,
                          ids: List[str] = None,
                          multiword_ids: List[str] = None,
                          multiword_forms: List[str] = None,
@@ -103,12 +108,13 @@ class UniversalDependenciesDatasetReader(DatasetReader):
         tokens = TextField([Token(w) for w in words], self._token_indexers)
         fields["tokens"] = tokens
 
-        names = ["upos", "xpos", "feats", "lemmas", "langs"]
-        all_tags = [upos_tags, xpos_tags, feats, lemma_rules, langs]
+        names = ["upos", "xpos", "feats", "lemmas", "depheads", "deprels", "langs"]
+        all_tags = [upos_tags, xpos_tags, feats, lemma_rules, depheads, deprels, langs]
         for name, field in zip(names, all_tags):
             if field:
                 fields[name] = SequenceLabelField(field, tokens, label_namespace=name)
 
+        """
         if dependencies is not None:
             # We don't want to expand the label namespace with an additional dummy token, so we'll
             # always give the 'ROOT_HEAD' token a label of 'root'.
@@ -118,7 +124,7 @@ class UniversalDependenciesDatasetReader(DatasetReader):
             fields["head_indices"] = SequenceLabelField([int(x[1]) for x in dependencies],
                                                         tokens,
                                                         label_namespace="head_index_tags")
-
+        """
         fields["metadata"] = MetadataField({
             "words": words,
             "upos_tags": upos_tags,
@@ -126,10 +132,11 @@ class UniversalDependenciesDatasetReader(DatasetReader):
             "feats": feats,
             "lemmas": lemmas,
             "lemma_rules": lemma_rules,
+            "depheads": depheads,
+            "deprels": deprels,
             "ids": ids,
             "multiword_ids": multiword_ids,
             "multiword_forms": multiword_forms,
             "langs": langs
         })
-
         return Instance(fields)

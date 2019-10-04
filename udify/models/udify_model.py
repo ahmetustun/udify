@@ -116,6 +116,7 @@ class UdifyModel(Model):
             if self.post_encoder_embedder:
                 decoder_input = decoder_input + post_embeddings
 
+            """
             if task == "deps":
                 tag_logits = logits["upos"] if "upos" in logits else None
                 pred_output = self.decoders[task](decoder_input, mask, tag_logits,
@@ -127,8 +128,14 @@ class UdifyModel(Model):
 
                 logits[task] = pred_output["logits"]
                 class_probabilities[task] = pred_output["class_probabilities"]
+            """
+            pred_output = self.decoders[task](decoder_input, mask, gold_tags, metadata)
 
-            if task in gold_tags or task == "deps" and "head_tags" in gold_tags:
+            logits[task] = pred_output["logits"]
+            class_probabilities[task] = pred_output["class_probabilities"]
+
+
+            if task in gold_tags:# or task == "deps" and "head_tags" in gold_tags:
                 # Keep track of the loss if we have the gold tags available
                 loss += pred_output["loss"]
 

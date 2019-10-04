@@ -1,0 +1,169 @@
+// The base configuration for UD parsing
+{
+  "dataset_reader": {
+    "lazy": false,
+    "type": "udify_universal_dependencies",
+    "token_indexers": {
+      "tokens": {
+        "type": "single_id",
+        "lowercase_tokens": true
+      },
+      "token_characters": {
+        "type": "characters"
+      }
+    }
+  },
+  "vocabulary": {
+    "directory_path": "data/vocab/multilingual/vocabulary",
+    "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "deprels", "depheads","langs", "*tags", "*labels"]
+  },
+  "train_data_path": "data/ud/multilingual/train.conllu",
+  "validation_data_path": "data/ud/multilingual/dev.conllu",
+  "test_data_path": "data/ud/multilingual/test.conllu",
+  "evaluate_on_test": true,
+  "model": {
+    "type": "udify_model",
+    "word_dropout": 0.2,
+    "layer_dropout": 0.1,
+    "tasks": ["upos", "xpos", "feats", "lemmas", "deprels", "depheads"],
+    "dropout": 0.0,
+    "text_field_embedder": {
+      "type": "basic",
+      "allow_unmatched_keys": true,
+      "embedder_to_indexer_map": {
+        "token_characters": ["token_characters"],
+        "tokens": ["tokens"],
+        "bert": ["bert", "bert-offsets"]
+      },
+      "token_embedders": {
+        "tokens": {
+          "type": "embedding",
+          "pretrained_file": "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.100d.txt.gz",
+          "embedding_dim": 100,
+          "trainable": false
+        },
+        "token_characters": {
+          "type": "character_encoding",
+          "embedding": {
+            "embedding_dim": 64
+            },
+          "encoder": {
+            "type": "lstm",
+            "input_size": 64,
+            "hidden_size": 128,
+            "num_layers": 1,
+            "dropout": 0.2,
+            "bidirectional": true
+          }
+        }
+      }
+    },
+    "encoder": {
+      "type": "lstm",
+      "bidirectional": true,
+      "input_size": 356,
+      "hidden_size": 512,
+      "num_layers": 1,
+      "dropout": 0.2
+    },
+    "decoders": {
+      "upos": {
+        "type": "udify_tag_decoder",
+        "task": "upos",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        }
+      },
+      "feats": {
+        "type": "udify_tag_decoder",
+        "task": "feats",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        },
+        "adaptive": true
+      },
+      "xpos": {
+        "type": "udify_tag_decoder",
+        "task": "xpos",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        },
+        "adaptive": true
+      },
+      "lemmas": {
+        "type": "udify_tag_decoder",
+        "task": "lemmas",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        },
+        "adaptive": true
+      },
+      "depheads": {
+        "type": "udify_tag_decoder",
+        "task": "depheads",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        },
+        "adaptive": true
+      },
+      "deprels": {
+        "type": "udify_tag_decoder",
+        "task": "deprels",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        },
+        "adaptive": true
+      }
+      /*"deps": {
+        "type": "udify_dependency_decoder",
+        "pos_embed_dim": null,
+        "tag_representation_dim": 128,
+        "arc_representation_dim": 512,
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 1024
+        }
+      }*/
+    }
+  },
+  "iterator": {
+    "type": "bucket",
+    "batch_size": 32,
+    "sorting_keys": [["tokens", "num_tokens"]],
+    "biggest_batch_first": true,
+    "maximum_samples_per_batch": ["num_tokens", 32*100]
+  },
+  "trainer": {
+    "optimizer": {
+      "type": "adam",
+      "lr": 2e-3,
+      "betas": [0.9, 0.99],
+      "weight_decay": 0.01
+    },
+    "learning_rate_scheduler": {
+      "type": "multi_step",
+      "milestones": [0, 1, 15, 20, 30, 40],
+      "gamma": 0.5
+    },
+    "num_epochs": 100,
+    "patience": 5,
+    "validation_metric": "+.run/.sum",
+    "should_log_learning_rate": false,
+    "should_log_parameter_statistics": false,
+    "summary_interval": 500,
+    "num_serialized_models_to_keep": 1,
+    "grad_norm": 1.0,
+    "grad_clipping": 1.0,
+    "cuda_device": 0
+  }/*,
+  "random_seed": 13370,
+  "numpy_seed": 1337,
+  "pytorch_seed": 133
+*/
+}

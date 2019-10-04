@@ -12,14 +12,15 @@
     }
   },
   "vocabulary": {
-    "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "*tags", "*labels"],
+    "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "deprels","depheads","*tags", "*labels"],
     // Add the special "@@UNKNOWN@@" token to handle dev/test set labels that don't appear in training
     "tokens_to_add": {
       "upos": ["@@UNKNOWN@@"],
       "xpos": ["@@UNKNOWN@@"],
       "feats": ["@@UNKNOWN@@"],
       "lemmas": ["@@UNKNOWN@@"],
-      "head_tags": ["@@UNKNOWN@@"]
+      "deprels": ["@@UNKNOWN@@"],
+      "depheads": ["@@UNKNOWN@@"],
     }
   },
   "train_file_paths": {},

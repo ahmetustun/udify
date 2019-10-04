@@ -58,7 +58,8 @@ class UdifyPredictor(Predictor):
         replace_tokens(instance, "feats", "_")
         replace_tokens(instance, "xpos", "_")
         replace_tokens(instance, "upos", "NOUN")
-        replace_tokens(instance, "head_tags", "case")
+        replace_tokens(instance, "deprels", "case")
+        replace_tokens(instance, "depheads", "1")
 
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
