@@ -130,7 +130,7 @@
   },
   "iterator": {
     "type": "bucket",
-    "batch_size": 32,
+    "batch_size": 16,
     "sorting_keys": [["tokens", "num_tokens"]],
     "biggest_batch_first": true,
     "maximum_samples_per_batch": ["num_tokens", 32*100]
