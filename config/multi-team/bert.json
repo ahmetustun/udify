@@ -54,7 +54,7 @@
       "type": "lstm",
       "bidirectional": true,
       "input_size": 768,
-      "hidden_size": 512,
+      "hidden_size": 1024,
       "num_layers": 1,
       "dropout": 0.2
     },
@@ -64,7 +64,7 @@
         "task": "upos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         }
       },
       "feats": {
@@ -72,7 +72,7 @@
         "task": "feats",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -81,7 +81,7 @@
         "task": "xpos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -90,18 +90,18 @@
         "task": "lemmas",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
       "deps": {
         "type": "udify_dependency_decoder",
         "pos_embed_dim": null,
-        "tag_representation_dim": 128,
-        "arc_representation_dim": 512,
+        "tag_representation_dim": 256,
+        "arc_representation_dim": 768,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         }
       }
     }
