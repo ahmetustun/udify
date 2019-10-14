@@ -31,7 +31,7 @@
     "type": "udify_model",
     "word_dropout": 0.2,
     "layer_dropout": 0.1,
-    "tasks": ["upos"],
+    "tasks": ["upos", "feats", "lemmas", "deps"],
     "dropout": 0.0,
     "text_field_embedder": {
       "type": "basic",
@@ -133,7 +133,7 @@
     "batch_size": 16,
     "sorting_keys": [["tokens", "num_tokens"]],
     "biggest_batch_first": true,
-    "maximum_samples_per_batch": ["num_tokens", 32*100]
+    "maximum_samples_per_batch": ["num_tokens", 16*100]
   },
   "trainer": {
     "optimizer": {
