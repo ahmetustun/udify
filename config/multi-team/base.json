@@ -76,7 +76,7 @@
       "type": "lstm",
       "bidirectional": true,
       "input_size": 356,
-      "hidden_size": 1024,
+      "hidden_size": 512,
       "num_layers": 1,
       "dropout": 0.2
     },
@@ -86,7 +86,7 @@
         "task": "upos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 2048
+          "input_dim": 1024
         }
       },
       "feats": {
@@ -94,7 +94,7 @@
         "task": "feats",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 2048
+          "input_dim": 1024
         },
         "adaptive": true
       },
@@ -103,7 +103,7 @@
         "task": "xpos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 2048
+          "input_dim": 1024
         },
         "adaptive": true
       },
@@ -112,7 +112,7 @@
         "task": "lemmas",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 2048
+          "input_dim": 1024
         },
         "adaptive": true
       },
@@ -123,7 +123,7 @@
         "arc_representation_dim": 768,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 2048
+          "input_dim": 1024
         }
       }
     }
@@ -138,15 +138,15 @@
   "trainer": {
     "optimizer": {
       "type": "adam",
-      "lr": 1e-4,
+      "lr": 1e-3,
       "betas": [0.9, 0.99],
       "weight_decay": 0.0
-    }/*,
+    },
     "learning_rate_scheduler": {
       "type": "multi_step",
-      "milestones": [0, 1, 15, 20, 30, 40],
-      "gamma": 0.5
-    }*/,
+      "milestones": [5, 15],
+      "gamma": 0.1
+    },
     "num_epochs": 100,
     "patience": 5,
     "validation_metric": "+.run/.sum",
