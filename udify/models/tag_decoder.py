@@ -19,7 +19,7 @@ from allennlp.nn.util import sequence_cross_entropy_with_logits
 from allennlp.training.metrics import CategoricalAccuracy
 
 from udify.dataset_readers.lemma_edit import apply_lemma_rule
-
+from udify.dataset_readers.dep_converter import decode_dep_structure
 
 def sequence_cross_entropy(log_probs: torch.FloatTensor,
                            targets: torch.LongTensor,
@@ -157,7 +157,6 @@ class TagDecoder(Model):
         output_dim = [batch_size, sequence_length, self.num_classes]
 
         loss_fn = self._adaptive_loss if self.adaptive else self._loss
-
         output_dict = loss_fn(hidden, mask, gold_tags[self.task], output_dim)
         self._features_loss(hidden, mask, gold_tags, output_dict)
 
@@ -215,7 +214,9 @@ class TagDecoder(Model):
                 metric(logits, gold_tags[feature], mask.float())
 
     @overrides
-    def decode(self, output_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def decode(self, output_dict: Dict[str, torch.Tensor], depConvStrategy) -> Dict[str, torch.Tensor]:
+        for i in range(10):
+            print("DECODING", self.task)
         all_words = output_dict["words"]
 
         all_predictions = output_dict["class_probabilities"][self.task].cpu().data.numpy()
@@ -238,6 +239,11 @@ class TagDecoder(Model):
                         return word
                     return apply_lemma_rule(word, rule)
                 tags = [decode_lemma(word, rule) for word, rule in zip(words, tags)]
+
+            #ROB WHAT IF WE NEED INFO FROM OTHER TASK? 
+            # I think it should work when they are already processed?
+            if self.task == 'dep_heads':
+                decode_dep_structure(tags, output_dict['upos'], depConvStrategy)
 
             all_tags.append(tags)
         output_dict[self.task] = all_tags

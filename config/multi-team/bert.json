@@ -21,7 +21,7 @@
   },
   "vocabulary": {
     "directory_path": "data/vocab/multilingual/vocabulary",
-    "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "langs","*tags", "*labels"]
+    "non_padded_namespaces": ["upos", "xpos", "feats", "lemmas", "langs", "dep_heads", "dep_rels", "*tags", "*labels"]
   },
   "train_data_path": "data/ud/multilingual/train.conllu",
   "validation_data_path": "data/ud/multilingual/dev.conllu",
@@ -31,7 +31,7 @@
     "type": "udify_model",
     "word_dropout": 0.2,
     "layer_dropout": 0.1,
-    "tasks": ["upos", "xpos", "feats", "lemmas", "deps"],
+    "tasks": ["upos", "feats", "lemmas", "dep_heads", "dep_rels"],
     "dropout": 0.0,
     "text_field_embedder": {
       "type": "basic",
@@ -54,7 +54,7 @@
       "type": "lstm",
       "bidirectional": true,
       "input_size": 768,
-      "hidden_size": 512,
+      "hidden_size": 1024,
       "num_layers": 1,
       "dropout": 0.2
     },
@@ -64,7 +64,7 @@
         "task": "upos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         }
       },
       "feats": {
@@ -72,7 +72,7 @@
         "task": "feats",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -81,7 +81,7 @@
         "task": "xpos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -90,40 +90,59 @@
         "task": "lemmas",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
-      "deps": {
-        "type": "udify_dependency_decoder",
-        "pos_embed_dim": null,
-        "tag_representation_dim": 128,
-        "arc_representation_dim": 512,
+      "dep_heads": {
+        "type": "udify_tag_decoder",
+        "task": "dep_heads",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
+        },
+        "adaptive": true
+      },
+      "dep_rels": {
+        "type": "udify_tag_decoder",
+        "task": "dep_rels",
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 2048
+        },
+        "adaptive": true
+      },
+
+      /*"deps": {
+        "type": "udify_dependency_decoder",
+        "pos_embed_dim": null,
+        "tag_representation_dim": 256,
+        "arc_representation_dim": 768,
+        "encoder": {
+          "type": "pass_through",
+          "input_dim": 2048
         }
-      }
+      }*/
     }
   },
   "iterator": {
     "type": "bucket",
-    "batch_size": 32,
+    "batch_size": 16,
     "sorting_keys": [["tokens", "num_tokens"]],
     "biggest_batch_first": true,
-    "maximum_samples_per_batch": ["num_tokens", 32*100]
+    "maximum_samples_per_batch": ["num_tokens", 16*100]
   },
   "trainer": {
     "optimizer": {
       "type": "adam",
-      "lr": 2e-3,
+      "lr": 1e-3,
       "betas": [0.9, 0.99],
-      "weight_decay": 0.01
+      "weight_decay": 0.0
     },
     "learning_rate_scheduler": {
       "type": "multi_step",
-      "milestones": [0, 1, 15, 20, 30, 40],
-      "gamma": 0.5
+      "milestones": [5, 15],
+      "gamma": 0.1
     },
     "num_epochs": 100,
     "patience": 5,

@@ -15,6 +15,7 @@ from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import Token
 
 from udify.dataset_readers.lemma_edit import gen_lemma_rule
+from udify.dataset_readers.dep_converter import encode_dep_structure
 
 import logging
 
@@ -34,8 +35,9 @@ def lazy_parse(text: str, fields: Tuple[str, ...]=DEFAULT_FIELDS):
 class UniversalDependenciesDatasetReader(DatasetReader):
     def __init__(self,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 lazy: bool = False) -> None:
+                 lazy: bool = False, depConv: str = '1') -> None:
         super().__init__(lazy)
+        self.depConv = depConv
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
 
     @overrides
@@ -76,17 +78,23 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                 xpos_tags = get_field("xpostag")
                 feats = get_field("feats", lambda x: "|".join(k + "=" + v for k, v in x.items())
                                                      if hasattr(x, "items") else "_")
-                heads = get_field("dephead")
-                dep_rels = get_field("deprel")
+                
+                dep_heads = get_field("dep_heads")
+                dep_rels = get_field("dep_rels")
+                #for i in range(len(dep_heads)):
+                #    print(i, upos_tags[i], dep_heads[i], dep_rels[i])
+                #print()
+                dep_heads = encode_dep_structure(dep_heads, upos_tags, strategy=self.depConv)
+                #for i in range(len(dep_heads)):
+                #    print(i, upos_tags[i], dep_heads[i], dep_rels[i])
+                #exit(1)
+
                 #dependencies = list(zip(dep_rels, heads))
 
                 langs = get_field("lang")
 
-                #yield self.text_to_instance(words, lemmas, lemma_rules, upos_tags, xpos_tags,
-                #                            feats, dependencies, ids, multiword_ids, multiword_forms, langs)
-
                 yield self.text_to_instance(words, lemmas, lemma_rules, upos_tags, xpos_tags,
-                                feats, heads, dep_rels, ids, multiword_ids, multiword_forms, langs)
+                                            feats, dep_heads, dep_rels, ids, multiword_ids, multiword_forms, langs)
 
     @overrides
     def text_to_instance(self,  # type: ignore
@@ -96,9 +104,8 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                          upos_tags: List[str] = None,
                          xpos_tags: List[str] = None,
                          feats: List[str] = None,
-                         depheads: List[int] = None,
-                         deprels: List[str] = None,
-                         #dependencies: List[Tuple[str, int]] = None,
+                         dep_heads: List[str] = None,
+                         dep_rels: List[str] = None,
                          ids: List[str] = None,
                          multiword_ids: List[str] = None,
                          multiword_forms: List[str] = None,
@@ -108,12 +115,11 @@ class UniversalDependenciesDatasetReader(DatasetReader):
         tokens = TextField([Token(w) for w in words], self._token_indexers)
         fields["tokens"] = tokens
 
-        names = ["upos", "xpos", "feats", "lemmas", "depheads", "deprels", "langs"]
-        all_tags = [upos_tags, xpos_tags, feats, lemma_rules, depheads, deprels, langs]
+        names = ["upos", "xpos", "feats", "lemmas", "dep_heads", "dep_rels", "langs"]
+        all_tags = [upos_tags, xpos_tags, feats, lemma_rules, dep_heads, dep_rels, langs]
         for name, field in zip(names, all_tags):
             if field:
                 fields[name] = SequenceLabelField(field, tokens, label_namespace=name)
-
         """
         if dependencies is not None:
             # We don't want to expand the label namespace with an additional dummy token, so we'll
@@ -132,11 +138,12 @@ class UniversalDependenciesDatasetReader(DatasetReader):
             "feats": feats,
             "lemmas": lemmas,
             "lemma_rules": lemma_rules,
-            "depheads": depheads,
-            "deprels": deprels,
+            "dep_heads": dep_heads,
+            "dep_rels": dep_rels,
             "ids": ids,
             "multiword_ids": multiword_ids,
             "multiword_forms": multiword_forms,
             "langs": langs
         })
+
         return Instance(fields)

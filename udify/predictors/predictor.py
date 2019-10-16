@@ -58,8 +58,8 @@ class UdifyPredictor(Predictor):
         replace_tokens(instance, "feats", "_")
         replace_tokens(instance, "xpos", "_")
         replace_tokens(instance, "upos", "NOUN")
-        replace_tokens(instance, "deprels", "case")
-        replace_tokens(instance, "depheads", "1")
+        replace_tokens(instance, "dep_rels", "case")
+        replace_tokens(instance, "dep_heads", "1")
 
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
@@ -76,7 +76,7 @@ class UdifyPredictor(Predictor):
         word_count = len([word for word in outputs["words"]])
         lines = zip(*[outputs[k] if k in outputs else ["_"] * word_count
                       for k in ["ids", "words", "lemmas", "upos", "xpos", "feats",
-                                "predicted_heads", "predicted_dependencies"]])
+                                "dep_heads", "dep_rels"]])
 
         multiword_map = None
         if outputs["multiword_ids"]:

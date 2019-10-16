@@ -10,13 +10,13 @@
       },
       "token_characters": {
         "type": "characters"
-      }/*,
+      },
       "bert": {
         "type": "udify-bert-pretrained",
         "pretrained_model": "config/archive/bert-base-multilingual-cased/vocab.txt",
         "do_lowercase": false,
         "use_starting_offsets": true
-      }*/
+      }
     }
   },
   "vocabulary": {
@@ -61,7 +61,7 @@
             "dropout": 0.2,
             "bidirectional": true
           }
-        }/*,
+        },
         "bert": {
           "type": "udify-bert-pretrained",
         "pretrained_model": "bert-base-multilingual-cased",
@@ -69,14 +69,14 @@
           "dropout": 0.25,
           "layer_dropout": 0.25,
           "combine_layers": "last"
-        }*/
+        }
       }
     },
     "encoder": {
       "type": "lstm",
       "bidirectional": true,
-      "input_size": 356,
-      "hidden_size": 512,
+      "input_size": 1124,
+      "hidden_size": 1024,
       "num_layers": 1,
       "dropout": 0.2
     },
@@ -86,7 +86,7 @@
         "task": "upos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         }
       },
       "feats": {
@@ -94,7 +94,7 @@
         "task": "feats",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -103,7 +103,7 @@
         "task": "xpos",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -112,7 +112,7 @@
         "task": "lemmas",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -121,7 +121,7 @@
         "task": "dep_heads",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -130,7 +130,7 @@
         "task": "dep_rels",
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         },
         "adaptive": true
       },
@@ -142,7 +142,7 @@
         "arc_representation_dim": 768,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 1024
+          "input_dim": 2048
         }
       }
       */
@@ -168,7 +168,7 @@
       "gamma": 0.1
     },
     "num_epochs": 100,
-    "patience": 5,
+    "patience": 10,
     "validation_metric": "+.run/.sum",
     "should_log_learning_rate": false,
     "should_log_parameter_statistics": false,

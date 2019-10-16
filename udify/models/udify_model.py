@@ -40,6 +40,7 @@ class UdifyModel(Model):
                  word_dropout: float = 0.0,
                  mix_embedding: int = None,
                  layer_dropout: int = 0.0,
+                 depConvStrategy: str = '1', # HOW TO SET THIS?
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(UdifyModel, self).__init__(vocab, regularizer)
@@ -53,6 +54,7 @@ class UdifyModel(Model):
         self.word_dropout = word_dropout
         self.dropout = torch.nn.Dropout(p=dropout)
         self.decoders = torch.nn.ModuleDict(decoders)
+        self.depConvStrategy = depConvStrategy
 
         if mix_embedding:
             self.scalar_mix = torch.nn.ModuleDict({
@@ -116,6 +118,7 @@ class UdifyModel(Model):
             if self.post_encoder_embedder:
                 decoder_input = decoder_input + post_embeddings
 
+            # Disabled special handing dependencies
             """
             if task == "deps":
                 tag_logits = logits["upos"] if "upos" in logits else None
@@ -134,8 +137,7 @@ class UdifyModel(Model):
             logits[task] = pred_output["logits"]
             class_probabilities[task] = pred_output["class_probabilities"]
 
-
-            if task in gold_tags:# or task == "deps" and "head_tags" in gold_tags:
+            if task in gold_tags: # or task == "deps" and "head_tags" in gold_tags:
                 # Keep track of the loss if we have the gold tags available
                 loss += pred_output["loss"]
 
@@ -211,7 +213,7 @@ class UdifyModel(Model):
     @overrides
     def decode(self, output_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         for task in self.tasks:
-            self.decoders[task].decode(output_dict)
+            self.decoders[task].decode(output_dict, self.depConvStrategy)
 
         return output_dict
 
@@ -222,6 +224,7 @@ class UdifyModel(Model):
                    for name, task_metric in self.decoders[task].get_metrics(reset).items()}
 
         # The "sum" metric summing all tracked metrics keeps a good measure of patience for early stopping and saving
+        #ROB FIX?, just use direct labels?
         metrics_to_track = {"upos", "xpos", "feats", "lemmas", "LAS", "UAS"}
         metrics[".run/.sum"] = sum(metric
                                    for name, metric in metrics.items()

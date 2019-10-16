@@ -29,6 +29,7 @@ parser.add_argument("--cleanup_archive", action="store_true", help="Delete the m
 parser.add_argument("--replace_vocab", action="store_true", help="Create a new vocab and replace the cached one")
 parser.add_argument("--archive_bert", action="store_true", help="Archives the finetuned BERT model after training")
 parser.add_argument("--predictor", default="udify_predictor", type=str, help="The type of predictor to use")
+parser.add_argument("--depConv", default="1", type=str, help="The type of convertion to use for dependency trees: 1=none, 2=relative, 3=relative POS, 4=bracketing based, see for more info: viable dependency parsing as sequence labeling")
 
 args = parser.parse_args()
 
@@ -47,6 +48,8 @@ if not args.resume:
         overrides["trainer"] = {"cuda_device": args.device}
     if args.lazy is not None:
         overrides["dataset_reader"] = {"lazy": args.lazy}
+    if args.depConv is not None:
+        overrides["dataset_reader"] = {"depConv": args.depConv}
     configs.append(Params(overrides))
     for config_file in args.config:
         configs.append(Params.from_file(config_file))
