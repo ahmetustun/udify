@@ -50,8 +50,13 @@ def encode_dep_structure(heads, poss, strategy):
         print('Dependency conversion strategy ' + strategy + ' is not known, please use a value between 1-4')
 
 def relDecoding(heads, strategy):
-    print('Decoder: Dependency conversion strategy 2 is not implemented yet, sorry')
-    exit(1) 
+    newHeads = []
+    for wordIdx in range(len(heads)):
+        if heads[wordIdx][0] == '-':
+            newHeads.append(wordIdx + 1 - int(heads[wordIdx][1:]))
+        else:
+            newHeads.append(wordIdx + 1 + int(heads[wordIdx]))
+    return newHeads
 
 def relPosDecoding(heads, poss, strategy):
     print('Decoder: Dependency conversion strategy 3 is not implemented yet, sorry')
