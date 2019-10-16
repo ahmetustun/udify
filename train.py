@@ -49,7 +49,8 @@ if not args.resume:
     if args.lazy is not None:
         overrides["dataset_reader"] = {"lazy": args.lazy}
     if args.depConv is not None:
-        overrides["dataset_reader"] = {"depConv": args.depConv}
+        overrides["dataset_reader"] = {"depConvStrategy": args.depConv}
+        overrides["model"] = {"depConvStrategy":args.depConv}
     configs.append(Params(overrides))
     for config_file in args.config:
         configs.append(Params.from_file(config_file))

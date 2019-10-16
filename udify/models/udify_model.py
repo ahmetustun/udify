@@ -40,7 +40,7 @@ class UdifyModel(Model):
                  word_dropout: float = 0.0,
                  mix_embedding: int = None,
                  layer_dropout: int = 0.0,
-                 depConvStrategy: str = '1', # HOW TO SET THIS?
+                 depConvStrategy: str = '1',
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(UdifyModel, self).__init__(vocab, regularizer)

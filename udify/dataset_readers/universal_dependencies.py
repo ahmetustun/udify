@@ -35,9 +35,9 @@ def lazy_parse(text: str, fields: Tuple[str, ...]=DEFAULT_FIELDS):
 class UniversalDependenciesDatasetReader(DatasetReader):
     def __init__(self,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 lazy: bool = False, depConv: str = '1') -> None:
+                 lazy: bool = False, depConvStrategy: str = '1') -> None:
         super().__init__(lazy)
-        self.depConv = depConv
+        self.depConvStrategy = depConvStrategy
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
 
     @overrides
@@ -84,7 +84,7 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                 #for i in range(len(dep_heads)):
                 #    print(i, upos_tags[i], dep_heads[i], dep_rels[i])
                 #print()
-                dep_heads = encode_dep_structure(dep_heads, upos_tags, strategy=self.depConv)
+                dep_heads = encode_dep_structure(dep_heads, upos_tags, strategy=self.depConvStrategy)
                 #for i in range(len(dep_heads)):
                 #    print(i, upos_tags[i], dep_heads[i], dep_rels[i])
                 #exit(1)
