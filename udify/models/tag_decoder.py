@@ -20,6 +20,7 @@ from allennlp.training.metrics import CategoricalAccuracy
 
 from udify.dataset_readers.lemma_edit import apply_lemma_rule
 from udify.dataset_readers.dep_converter import decode_dep_structure
+from udify.dataset_readers.fix_tree import fix_tree
 
 def sequence_cross_entropy(log_probs: torch.FloatTensor,
                            targets: torch.LongTensor,
@@ -240,10 +241,11 @@ class TagDecoder(Model):
                     return apply_lemma_rule(word, rule)
                 tags = [decode_lemma(word, rule) for word, rule in zip(words, tags)]
 
-            #ROB WHAT IF WE NEED INFO FROM OTHER TASK? 
-            # I think it should work when they are already processed?
+            #ROB: WHAT IF WE NEED INFO FROM OTHER TASK? 
+            #ROB (a day later): I think it should work when they are already processed?
             if self.task == 'dep_heads':
-                decode_dep_structure(tags, output_dict['upos'], depConvStrategy)
+                tags = decode_dep_structure(tags, output_dict['upos'], depConvStrategy)
+                fix_tree(tags)
 
             all_tags.append(tags)
         output_dict[self.task] = all_tags

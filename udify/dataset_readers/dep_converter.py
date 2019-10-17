@@ -33,7 +33,7 @@ def relPosEncoding(heads, poss, strategy):
     return newHeads
 
 def bracketEncoding(heads, strategy):#pos?
-    print('Dependency conversion strategy 4 is not implemented yet, sorry')
+    print('Encoder: Dependency conversion strategy 4 is not implemented yet, sorry')
     exit(1)
 
 #heads and poss are list of strings
@@ -59,6 +59,7 @@ def relDecoding(heads, strategy):
     return newHeads
 
 def relPosDecoding(heads, poss, strategy):
+    #TODO ROB
     print('Decoder: Dependency conversion strategy 3 is not implemented yet, sorry')
     exit(1)
 
