@@ -131,7 +131,6 @@ class TagDecoder(Model):
             self.features_metrics[feature] = {
                 "acc": CategoricalAccuracy(),
             }
-
         initializer(self)
 
     @overrides
@@ -216,8 +215,6 @@ class TagDecoder(Model):
 
     @overrides
     def decode(self, output_dict: Dict[str, torch.Tensor], depConvStrategy) -> Dict[str, torch.Tensor]:
-        for i in range(10):
-            print("DECODING", self.task)
         all_words = output_dict["words"]
 
         all_predictions = output_dict["class_probabilities"][self.task].cpu().data.numpy()

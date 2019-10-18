@@ -9,6 +9,8 @@ https://github.com/mstrise/dep2label
 def relEncoding(heads, strategy):
     for i in range(len(heads)):
         heads[i] = str(int(heads[i]) - (i + 1))
+        if heads[i][0] != '-':
+            heads[i] = '+' + heads[i]
     return heads
 
 def relPosEncoding(heads, poss, strategy):
@@ -52,6 +54,9 @@ def encode_dep_structure(heads, poss, strategy):
 def relDecoding(heads, strategy):
     newHeads = []
     for wordIdx in range(len(heads)):
+        if heads[wordIdx] == '@@UNKNOWN@@':
+            newHeads.append('0')
+            continue
         if heads[wordIdx][0] == '-':
             newHeads.append(wordIdx + 1 - int(heads[wordIdx][1:]))
         else:
@@ -59,6 +64,7 @@ def relDecoding(heads, strategy):
     return newHeads
 
 def relPosDecoding(heads, poss, strategy):
+    # what if POS is not found?
     #TODO ROB
     print('Decoder: Dependency conversion strategy 3 is not implemented yet, sorry')
     exit(1)
