@@ -34,8 +34,10 @@ def lazy_parse(text: str, fields: Tuple[str, ...]=DEFAULT_FIELDS):
 class UniversalDependenciesDatasetReader(DatasetReader):
     def __init__(self,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 lazy: bool = False) -> None:
+                 lazy: bool = False,
+                 use_lang_ids: bool = False) -> None:
         super().__init__(lazy)
+        self.use_lang_ids = use_lang_ids
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
 
     @overrides
@@ -100,7 +102,11 @@ class UniversalDependenciesDatasetReader(DatasetReader):
                          langs: List[str] = None) -> Instance:
         fields: Dict[str, Field] = {}
 
-        tokens = TextField([Token(w) for w in words], self._token_indexers)
+        if self.use_lang_ids:
+            # use ent_type_ for lang_ids
+            tokens = TextField([Token(text=w, ent_type_=l) for w,l in zip(words,langs)], self._token_indexers)
+        else:
+            tokens = TextField([Token(w) for w in words], self._token_indexers)
         fields["tokens"] = tokens
 
         names = ["upos", "xpos", "feats", "lemmas", "langs"]

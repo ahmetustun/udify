@@ -1,5 +1,6 @@
 {
   "dataset_reader": {
+    "use_lang_ids": true,
     "lazy": false,
     "token_indexers": {
       "tokens": {
@@ -7,23 +8,24 @@
         "lowercase_tokens": true
       },
       "bert": {
-        "type": "udify-bert-pretrained",
-        "pretrained_model": "config/archive/bert-base-multilingual-cased/vocab.txt",
+        "type": "udify-xlm",
+        "vocab": "config/archive/xlm-mlm-100-1280/vocab.json",
+        "pretrained_model": "xlm-mlm-100-1280",
         "do_lowercase": false,
         "use_starting_offsets": true
       }
     }
   },
-  "train_data_path": "data/UD_English-EWT/en_ewt-ud-train.conllu",
-  "validation_data_path": "data/UD_English-EWT/en_ewt-ud-dev.conllu",
-  "test_data_path": "data/UD_English-EWT/en_ewt-ud-test.conllu",
+  "train_data_path": "data/ud/train.conllu",
+  "validation_data_path": "data/ud/dev.conllu",
+  "test_data_path": "data/ud/test.conllu",
   "vocabulary": {
-    "directory_path": "data/vocab/en_ewt/vocabulary"
+    "directory_path": "data/vocab/tr_imst/vocabulary"
   },
   "model": {
-    "pretrained_model": "bert-base-multilingual-cased",
+    "pretrained_model": "xlm-mlm-100-1280",
     "word_dropout": 0.2,
-    "mix_embedding": 12,
+    "mix_embedding": 16,
     "layer_dropout": 0.1,
     "tasks": ["upos", "feats", "lemmas", "deps"],
     "text_field_embedder": {
@@ -31,12 +33,12 @@
       "dropout": 0.5,
       "allow_unmatched_keys": true,
       "embedder_to_indexer_map": {
-        "bert": ["bert", "bert-offsets"]
+        "bert": ["bert", "bert-offsets", "bert-lang-ids"]
       },
       "token_embedders": {
         "bert": {
-          "type": "udify-bert-pretrained",
-          "pretrained_model": "bert-base-multilingual-cased",
+          "type": "udify-xlm",
+          "pretrained_model": "xlm-mlm-100-1280",
           "requires_grad": true,
           "dropout": 0.15,
           "layer_dropout": 0.1,
@@ -46,35 +48,35 @@
     },
     "encoder": {
       "type": "pass_through",
-      "input_dim": 768
+      "input_dim": 1280
     },
     "decoders": {
       "upos": {
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 1280
         }
       },
       "feats": {
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 1280
         },
         "adaptive": true
       },
       "lemmas": {
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 1280
         },
         "adaptive": true
       },
       "deps": {
         "tag_representation_dim": 256,
-        "arc_representation_dim": 768,
+        "arc_representation_dim": 1280,
         "encoder": {
           "type": "pass_through",
-          "input_dim": 768
+          "input_dim": 1280
         }
       }
     }
@@ -99,10 +101,8 @@
       "weight_decay": 0.01,
       "lr": 1e-3,
       "parameter_groups": [
-        [["^text_field_embedder.*.bert_model.embeddings",
-          "^text_field_embedder.*.bert_model.encoder"], {}],
+        [["^text_field_embedder.*.xlm_model"], {}],
         [["^text_field_embedder.*._scalar_mix",
-          "^text_field_embedder.*.pooler",
           "^scalar_mix",
           "^decoders",
           "^shared_encoder"], {}]

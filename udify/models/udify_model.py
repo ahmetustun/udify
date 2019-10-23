@@ -8,7 +8,7 @@ import logging
 
 import torch
 
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+from pytorch_transformers import BertTokenizer, XLMTokenizer
 
 from allennlp.common.checks import check_dimensions_match, ConfigurationError
 from allennlp.data import Vocabulary
@@ -32,6 +32,7 @@ class UdifyModel(Model):
     def __init__(self,
                  vocab: Vocabulary,
                  tasks: List[str],
+                 pretrained_model: str,
                  text_field_embedder: TextFieldEmbedder,
                  encoder: Seq2SeqEncoder,
                  decoders: Dict[str, Model],
@@ -46,13 +47,19 @@ class UdifyModel(Model):
 
         self.tasks = tasks
         self.vocab = vocab
-        self.bert_vocab = BertTokenizer.from_pretrained("config/archive/bert-base-multilingual-cased/vocab.txt").vocab
         self.text_field_embedder = text_field_embedder
         self.post_encoder_embedder = post_encoder_embedder
         self.shared_encoder = encoder
         self.word_dropout = word_dropout
         self.dropout = torch.nn.Dropout(p=dropout)
         self.decoders = torch.nn.ModuleDict(decoders)
+
+        if 'bert' in pretrained_model:
+            self.tokenizer = BertTokenizer.from_pretrained(pretrained_model, do_lower_case=False)
+        elif 'xlm' in pretrained_model:
+            self.tokenizer = XLMTokenizer.from_pretrained(pretrained_model, do_lower_case=False)
+        else:
+            raise ConfigurationError(f"No corresponding pretrained model for tokenizer.")
 
         if mix_embedding:
             self.scalar_mix = torch.nn.ModuleDict({
@@ -156,8 +163,8 @@ class UdifyModel(Model):
 
         # BERT token dropout
         if "bert" in tokens:
-            oov_token = self.bert_vocab["[MASK]"]
-            ignore_tokens = [self.bert_vocab["[PAD]"], self.bert_vocab["[CLS]"], self.bert_vocab["[SEP]"]]
+            oov_token = self.tokenizer.mask_token_id
+            ignore_tokens = [self.tokenizer.pad_token_id, self.tokenizer.cls_token_id, self.tokenizer.sep_token_id]
             tokens["bert"] = self.token_dropout(tokens["bert"],
                                                 oov_token=oov_token,
                                                 padding_tokens=ignore_tokens,
