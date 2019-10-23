@@ -3,6 +3,8 @@ Utilities for converting dependency structures to sequences
 
 Adopted from dep2label
 https://github.com/mstrise/dep2label
+TODO, this can be made more readable by adding ROOT in frnot of the list, 
+making the id's match the list position (currently word 1 is in position 0 in the list)
 """
 
 
@@ -64,10 +66,50 @@ def relDecoding(heads, strategy):
     return newHeads
 
 def relPosDecoding(heads, poss, strategy):
-    # what if POS is not found?
-    #TODO ROB
-    print('Decoder: Dependency conversion strategy 3 is not implemented yet, sorry')
-    exit(1)
+    #TODO find root to connect impossible cases?
+    print(heads)
+    print(poss)
+    print()
+    newHeads = []
+    for wordIdx in range(len(heads)):
+        direction = heads[wordIdx][0]
+        distance = int(heads[wordIdx][1:].split(',')[0])
+        relPos = heads[wordIdx][1:].split(',')[1]
+        foundPos = 0
+        found = False
+        if relPos == 'ROOT':
+            newHeads.append('0')
+        elif direction == '-':
+            if wordIdx == 0: #if word=first word, link to next word
+                heads.append(str(wordIdx + 2))
+            cands = list(range(0,wordIdx))
+            cands.reverse()
+            for headIdx in cands:
+                if poss[headIdx] == relPos:
+                    foundPos += 1
+                    if foundPos == distance:
+                        newHeads.append(str(headIdx+1))
+                        found = True
+                        break
+            if not found:#if the link does not exist, link to prev word
+                newHeads.append(str(headIdx))
+
+        elif direction == '+':
+            if wordIdx == len(heads)-1:#if word=last word, link to prev word
+                newHeads.append(str(wordIdx))
+            for headIdx in range(wordIdx+1,len(heads)):
+                if poss[headIdx] == relPos:
+                    foundPos += 1
+                    if foundPos == distance:
+                        newHeads.append(str(headIdx+1))
+                        found = True
+                        break
+            if not found:#if the link does not exist, link to next word
+                newHeads.append(str(headIdx+2))
+        else:
+            print("Error, invalid head: " + heads[wordIdx])
+            newHeads.append('1')
+    return newHeads
 
 def bracketingDecoding(heads, poss, strategy):
     print('Decoder: Dependency conversion strategy 4 is not implemented yet, sorry')
