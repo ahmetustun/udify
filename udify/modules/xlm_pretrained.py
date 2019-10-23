@@ -114,16 +114,16 @@ class WordpieceIndexer(TokenIndexer[int]):
             self._never_lowercase = set(never_lowercase)
 
         # Convert the start_tokens and end_tokens to wordpiece_ids
-        self._start_piece_ids = [self.vocab[wordpiece]
+        self._start_piece_ids = [wordpiece_id
                                  for token in (start_tokens or [])
-                                 for wordpiece in wordpiece_tokenizer(token)]
-        self._end_piece_ids = [self.vocab[wordpiece]
+                                 for wordpiece_id in wordpiece_tokenizer.encode(token)]
+        self._end_piece_ids = [wordpiece_id
                                for token in (end_tokens or [])
-                               for wordpiece in wordpiece_tokenizer(token)]
+                               for wordpiece_id in wordpiece_tokenizer.encode(token)]
 
         # Convert the separator_token to wordpiece_ids
-        self._separator_ids = [self.vocab[wordpiece]
-                               for wordpiece in wordpiece_tokenizer(separator_token)]
+        self._separator_ids = [wordpiece_id
+                               for wordpiece_id in wordpiece_tokenizer.encode(separator_token)]
 
     @overrides
     def count_vocab_items(self, token: Token, counter: Dict[str, Dict[str, int]]):
@@ -156,7 +156,7 @@ class WordpieceIndexer(TokenIndexer[int]):
 
         # Obtain a nested sequence of wordpieces, each represented by a list of wordpiece ids
         token_wordpiece_ids = [
-            [self.vocab[wordpiece] for wordpiece in self.wordpiece_tokenizer(token)]
+            [wordpiece_id for wordpiece_id in self.wordpiece_tokenizer.encode(token)]
             for token in text
         ]
 
@@ -337,7 +337,7 @@ class PretrainedXLMIndexer(WordpieceIndexer):
 
         xlm_tokenizer = XLMTokenizer.from_pretrained(pretrained_model, do_lower_case=do_lowercase)
         super().__init__(vocab=vocab,
-                         wordpiece_tokenizer=xlm_tokenizer.tokenize,
+                         wordpiece_tokenizer=xlm_tokenizer,
                          namespace="xlm",
                          use_starting_offsets=use_starting_offsets,
                          max_pieces=max_pieces,
