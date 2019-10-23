@@ -472,7 +472,7 @@ class XLMEmbedder(TokenEmbedder):
         # that the memory consumption can dramatically increase for large batches with extremely
         # long sentences.
 
-        assert input_ids == lang_ids, 'size mismatch between input_ids and lang_ids'
+        assert input_ids.shape[-1] == lang_ids.shape[-1], 'size mismatch between input_ids and lang_ids'
 
         needs_split = full_seq_len > self.max_pieces
         last_window_size = 0
