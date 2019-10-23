@@ -227,7 +227,7 @@ class WordpieceIndexer(TokenIndexer[int]):
             # However, this would increase complexity, as sequences would need to be padded/unpadded in the middle
             wordpiece_windows = [self._start_piece_ids + flat_wordpiece_ids[i:i+window_length] + self._end_piece_ids
                                  for i in range(0, len(flat_wordpiece_ids), stride)]
-            lang_id_windows = [[token_wordpiece_lang_ids[0]] + token_wordpiece_lang_ids[:window_length] + [token_wordpiece_lang_ids[0]]
+            lang_id_windows = [[token_wordpiece_lang_ids[0]] + token_wordpiece_lang_ids[i:i+window_length] + [token_wordpiece_lang_ids[0]]
                                for i in range(0, len(flat_wordpiece_ids), stride)]
 
             # Check for overlap in the last window. Throw it away if it is redundant.
@@ -471,6 +471,9 @@ class XLMEmbedder(TokenEmbedder):
         # This can then be fed into BERT without any sentence length issues. Keep in mind
         # that the memory consumption can dramatically increase for large batches with extremely
         # long sentences.
+
+        assert input_ids == lang_ids, 'size mismatch between input_ids and lang_ids'
+
         needs_split = full_seq_len > self.max_pieces
         last_window_size = 0
         if needs_split:
