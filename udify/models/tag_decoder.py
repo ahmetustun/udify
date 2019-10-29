@@ -241,7 +241,7 @@ class TagDecoder(Model):
             #ROB: WHAT IF WE NEED INFO FROM OTHER TASK? 
             #ROB (a day later): I think it should work when they are already processed?
             if self.task == 'dep_heads':
-                tags = decode_dep_structure(tags, output_dict['upos'], depConvStrategy)
+                tags = decode_dep_structure(tags, output_dict['upos'][0], depConvStrategy)
                 fix_tree(tags)
 
             all_tags.append(tags)

@@ -8,14 +8,14 @@ making the id's match the list position (currently word 1 is in position 0 in th
 """
 
 
-def relEncoding(heads, strategy):
+def relEncoding(heads):
     for i in range(len(heads)):
         heads[i] = str(int(heads[i]) - (i + 1))
         if heads[i][0] != '-':
             heads[i] = '+' + heads[i]
     return heads
 
-def relPosEncoding(heads, poss, strategy):
+def relPosEncoding(heads, poss):
     newHeads = []
     for curIdx in range(len(heads)):
         headIdx = int(heads[curIdx]) - 1
@@ -36,7 +36,7 @@ def relPosEncoding(heads, poss, strategy):
             newHeads.append('+' + str(counter) + ',' + poss[headIdx])
     return newHeads
 
-def bracketEncoding(heads, strategy):#pos?
+def bracketEncoding(heads):#pos?
     print('Encoder: Dependency conversion strategy 4 is not implemented yet, sorry')
     exit(1)
 
@@ -45,15 +45,15 @@ def encode_dep_structure(heads, poss, strategy):
     if strategy == '1':
         return heads
     elif strategy == '2':
-        return relEncoding(heads, strategy)
+        return relEncoding(heads)
     elif strategy == '3':
-        return relPosEncoding(heads, poss, strategy)
+        return relPosEncoding(heads, poss)
     elif strategy == '4':
-        return bracketEncoding(heads, strategy)
+        return bracketEncoding(heads)
     else:
         print('Dependency conversion strategy ' + strategy + ' is not known, please use a value between 1-4')
 
-def relDecoding(heads, strategy):
+def relDecoding(heads):
     newHeads = []
     for wordIdx in range(len(heads)):
         if heads[wordIdx] == '@@UNKNOWN@@':
@@ -65,11 +65,8 @@ def relDecoding(heads, strategy):
             newHeads.append(wordIdx + 1 + int(heads[wordIdx]))
     return newHeads
 
-def relPosDecoding(heads, poss, strategy):
+def relPosDecoding(heads, poss):
     #TODO find root to connect impossible cases?
-    print(heads)
-    print(poss)
-    print()
     newHeads = []
     for wordIdx in range(len(heads)):
         direction = heads[wordIdx][0]
@@ -81,6 +78,7 @@ def relPosDecoding(heads, poss, strategy):
             newHeads.append('0')
         elif direction == '-':
             if wordIdx == 0: #if word=first word, link to next word
+                #TODO make smarter?
                 heads.append(str(wordIdx + 2))
             cands = list(range(0,wordIdx))
             cands.reverse()
@@ -92,10 +90,12 @@ def relPosDecoding(heads, poss, strategy):
                         found = True
                         break
             if not found:#if the link does not exist, link to prev word
-                newHeads.append(str(headIdx))
+                #TODO make smarter?
+                newHeads.append(str(wordIdx))
 
         elif direction == '+':
             if wordIdx == len(heads)-1:#if word=last word, link to prev word
+                #TODO make smarter?
                 newHeads.append(str(wordIdx))
             for headIdx in range(wordIdx+1,len(heads)):
                 if poss[headIdx] == relPos:
@@ -105,13 +105,14 @@ def relPosDecoding(heads, poss, strategy):
                         found = True
                         break
             if not found:#if the link does not exist, link to next word
-                newHeads.append(str(headIdx+2))
+                #TODO make smarter?
+                newHeads.append(str(wordIdx+2))
         else:
             print("Error, invalid head: " + heads[wordIdx])
             newHeads.append('1')
     return newHeads
 
-def bracketingDecoding(heads, poss, strategy):
+def bracketingDecoding(heads, poss):
     print('Decoder: Dependency conversion strategy 4 is not implemented yet, sorry')
     exit(1)
 
@@ -119,11 +120,11 @@ def decode_dep_structure(heads, poss, strategy):
     if strategy == '1':
         return heads
     elif strategy == '2':
-        return relDecoding(heads, strategy)
+        return relDecoding(heads)
     elif strategy == '3':
-        return relPosDecoding(heads, poss, strategy)
+        return relPosDecoding(heads, poss)
     elif strategy == '4':
-        return bracketDecoding(heads, strategy)
+        return bracketDecoding(heads)
     else:
         print('Dependency conversion strategy ' + strategy + ' is not known, please use a value between 1-4')
         exit(1)
