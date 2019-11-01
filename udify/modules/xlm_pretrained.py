@@ -408,7 +408,7 @@ class XLMEmbedder(TokenEmbedder):
                  end_tokens: int = 1,
                  layer_dropout: float = 0.0,
                  combine_layers: str = "mix",
-                 add_lang: bool = True) -> None:
+                 add_lang: bool = False) -> None:
         super().__init__()
         self.xlm_model = xlm_model
         self.output_dim = xlm_model.config.hidden_size
@@ -581,7 +581,7 @@ class UdifyPretrainedXLMEmbedder(XLMEmbedder):
                  requires_grad: bool = False,
                  dropout: float = 0.1,
                  layer_dropout: float = 0.1,
-                 add_lang: bool = True,
+                 add_lang: bool = False,
                  combine_layers: str = "mix") -> None:
         model = XLMModel.from_pretrained(pretrained_model, output_hidden_states=True, dropout=dropout, attention_dropout=dropout)
 
