@@ -42,7 +42,8 @@
           "requires_grad": true,
           "dropout": 0.15,
           "layer_dropout": 0.1,
-          "combine_layers": "all"
+          "combine_layers": "all",
+          "add_lang": false
         }
       }
     },

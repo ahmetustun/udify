@@ -407,7 +407,8 @@ class XLMEmbedder(TokenEmbedder):
                  start_tokens: int = 1,
                  end_tokens: int = 1,
                  layer_dropout: float = 0.0,
-                 combine_layers: str = "mix") -> None:
+                 combine_layers: str = "mix",
+                 add_lang: bool = True) -> None:
         super().__init__()
         self.xlm_model = xlm_model
         self.output_dim = xlm_model.config.hidden_size
@@ -415,6 +416,7 @@ class XLMEmbedder(TokenEmbedder):
         self.start_tokens = start_tokens
         self.end_tokens = end_tokens
         self.combine_layers = combine_layers
+        self.add_lang = add_lang
 
         if self.combine_layers == "mix":
             self._scalar_mix = ScalarMixWithDropout(xlm_model.config.num_hidden_layers,
@@ -498,10 +500,15 @@ class XLMEmbedder(TokenEmbedder):
 
         # input_ids may have extra dimensions, so we reshape down to 2-d
         # before calling the BERT model and then reshape back at the end.
-        _, all_encoder_layers = self.xlm_model(input_ids=util.combine_initial_dims(input_ids),
+        if self.add_lang:
+            _, all_encoder_layers = self.xlm_model(input_ids=util.combine_initial_dims(input_ids),
                                                 token_type_ids=util.combine_initial_dims(token_type_ids),
                                                 attention_mask=util.combine_initial_dims(input_mask),
                                                langs=util.combine_initial_dims(lang_ids))
+        else:
+            _, all_encoder_layers = self.xlm_model(input_ids=util.combine_initial_dims(input_ids),
+                                                   token_type_ids=util.combine_initial_dims(token_type_ids),
+                                                   attention_mask=util.combine_initial_dims(input_mask))
         all_encoder_layers = torch.stack(all_encoder_layers[1:])
 
         if needs_split:
@@ -574,6 +581,7 @@ class UdifyPretrainedXLMEmbedder(XLMEmbedder):
                  requires_grad: bool = False,
                  dropout: float = 0.1,
                  layer_dropout: float = 0.1,
+                 add_lang: bool = True,
                  combine_layers: str = "mix") -> None:
         model = XLMModel.from_pretrained(pretrained_model, output_hidden_states=True, dropout=dropout, attention_dropout=dropout)
 
@@ -582,7 +590,8 @@ class UdifyPretrainedXLMEmbedder(XLMEmbedder):
 
         super().__init__(xlm_model=model,
                          layer_dropout=layer_dropout,
-                         combine_layers=combine_layers)
+                         combine_layers=combine_layers,
+                         add_lang=add_lang)
 
         self.model = model
         self.dropout = dropout
